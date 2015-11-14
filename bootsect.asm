@@ -1,15 +1,11 @@
-[BITS 16]  ; commence en mode réel 16 bits
-[ORG 0x0]  ; pas de décalage d'adresse
-
 ;-----------------------------------------------------------------------------
 ; Le BIOS nous charge à l'adresse 0x7C00. Donc toutes les données interne
 ; au programme se situent à partir de cette adresse
 ;-----------------------------------------------------------------------------
 
 ; Initialisation des registres de segment en 0x07C00
-mov ax, 0x07C0     ; début segement des données
-mov ds, ax         ; selecteur de données contient les 16 bits forts d'une
-mov es, ax         ; adresse sur 20 bits
+mov ax, 0x07C0
+mov ds, ax         
 ; L'emplacement de la pile est arbitraire
 mov ax, 0x8000
 mov ss, ax

@@ -1,3 +1,3 @@
-nasm -o kernel kernel.asm
-copy kernel/B disk.img
+nasm -o bootsect bootsect.asm
+copy bootsect/B LedOS.img
 pause

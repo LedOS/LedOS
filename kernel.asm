@@ -10,6 +10,7 @@
 mov ax, 0x07C0     ; début segement des données
 mov ds, ax         ; selecteur de données contient les 16 bits forts d'une
 mov es, ax         ; adresse sur 20 bits
+; L'emplacement de la pile est arbitraire
 mov ax, 0x8000
 mov ss, ax
 mov sp, 0xf000    ; stack de 0x8F000 -> 0x80000
@@ -18,5 +19,5 @@ end:
     jmp end
 
 ;--- NOP jusqu'a 510 ---
-times 510-($-$$) db 144
-dw 0xAA55
+times 510-($-$$) db 144     ; 144 = nop
+dw 0xAA55                   ; siganture d'un secteur de boot

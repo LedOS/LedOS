@@ -4,9 +4,8 @@
 ;-----------------------------------------------------------------------------
 [BITS 16]
 [ORG 0x7C00]
-%define adresse_kernel 0x7E00
 
-jmp 0x0000:debut
+jmp debut
 
 GDTR:
     dw GDT_limite-GDT-1     ; limite sur 16 bits (0-15)
@@ -27,33 +26,12 @@ gdt_ds:
     db 0xFF, 0xFF, 0x0, 0x0, 0x0, 10010011b, 11011111b, 0x0
 GDT_limite:
 
-bootdrv: db 0
+pmode db 'mode protege... ', 0
 
 ; Initialise le segment DS en 0
 debut:
 xor ax, ax
 mov ds, ax
-mov es, ax
-mov ax, 0x8000  ; stack en 0xFFFF
-mov ss, ax
-mov sp, 0xf000
-
-; recuparation de l'unite de boot
-mov [bootdrv], dl ; le bios met le n° du disk de démarrage dans dl
-
-; charger le noyau
-xor ax, ax      ; fonction 0 = reset
-int 0x13       
-lire_disk:
-    mov bx, adresse_kernel ; es:bx pointeur vers buffer/destination
-    mov ah, 2       ; fonction 2 = lecture
-    mov al, 1       ; nombre de secteur à charger
-    mov ch, 0       ; cylindre
-    mov cl, 2       ; numéro du secteur
-    mov dh, 0       ; head
-    mov dl, [bootdrv]
-    int 0x13        ; copie le secteur dans la mémoire
-    jc lire_disk    ; CF = 1 si erreur
 
 ; Passage en mode protégé 32 bits
 cli              ; désactive les intérrutpion masquable
@@ -62,8 +40,27 @@ mov eax, cr0     ; PE = cr0[0]
 or al, 1         ; met le PE a 1
 mov cr0, eax     ; doit être immédiatement suivi d'un far jmp
     
-jmp 0x8:adresse_kernel  ; saut vers le kernel
+jmp 0x8:mode_protege  ; far jmp
+
+[BITS 32]
+mode_protege:
+    ; Initialise DS, ES, SS et ESP
+    mov ax, 0x10
+    mov ds, ax
+    mov es, ax
+    mov ss, ax
+    mov esp, 0x9F000
+    ; Afficher un text
+    mov esi, pmode
+    call afficher
+    
+boucle:
+    hlt           ; met le processeur en pause (attente d'une intérruption)
+    jmp boucle
+
+%include "inc/afficher32.asm"
+%include "inc/b2a10.asm"
+%include "inc/b2a16.asm"
   
 ;--- le secteur de boot doit faire 512 octets ---
-times 510-($-$$) db 0
-dw 0xaa55   ; signature pour les anciens bios 
+times 512-($-$$) db 0 

@@ -1,4 +1,4 @@
 nasm -o bootsect bootsect.asm
-copy bootsect/B LedOS.img
-"C:\Users\dell\VirtualBox VMs\LedOS\LedOS.vbox" --debug
+nasm -o kernel kernel.asm
+copy bootsect/B+kernel/B LedOS.img
 pause

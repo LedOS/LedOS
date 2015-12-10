@@ -1,2 +1,2 @@
 # LedOS
-Anathor mini OS
+Another mini OS

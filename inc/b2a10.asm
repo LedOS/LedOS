@@ -3,6 +3,10 @@
 
 nombre db '00000000', 0
 b2a10:
+    pushAll
+    cmp eax, 0       ; pour eviter la division par 0
+    jz fin_conversion
+    xor edx, edx     ; s'assurer qu'edx vaut 0
     mov edi, nombre+7    
     mov ebx, 10      ; on veut le nombre en base 10
 next_div:
@@ -16,6 +20,5 @@ next_div:
     jmp next_div    
 
 fin_conversion:
-    mov esi, nombre
-    call afficher
+    popAll
     ret

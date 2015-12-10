@@ -1,33 +1,35 @@
 ; Conversion base 2 vers 10:
-; nombre à convertire dans edx:eax, base dans ebx, quotient eax, reste edx
 
-nombre16 db '00000000', 0
+hex db '0123456789ABCDEF'
+nombre16 dq 0,0,0 ; 16 octet pour 64 bits + 0 terminal
+
 b2a16:
-    push eax
-    push ebx
-    push edx
-    mov edi, nombre16+7    
-    mov ebx, 16      ; on veut le nombre en base 10
-next_div16:
-    div ebx          ; divise edx:eax par ebx
-    cmp dl, 9        ; si le reste > 9 code ascii = a,b...
-    ja resteA        ; jump if above
-    add dl, '0'      ; edx <- code ascii du reste
-    jmp reste9
-resteA:
-    add dl, 'a'-10   ; edx <- code ascii du reste
-reste9:
-    mov [edi], dl    ; [edi] <- le reste
-    dec edi          ; chiffre suivant
-    cmp eax, 0       ; si quotient=0 alors fin
-    jz fin_b2a16
-    xor edx, edx     ; sinon on continu avec le quotient
-    jmp next_div16    
-
-fin_b2a16:
-    mov esi, nombre16
+    ; nombre à convertire dans rax
+    pushAll
+    xor rbx, rbx             
+    xor rcx, rcx             ; compteur pour le nombre de nibble
+    mov rdi, nombre16        ; rdi <- buffer pour le nombre en hex
+    mov [rdi], rbx           ; initialise le buffer a 0
+    mov [rdi+8], rbx
+b2a16_next:
+    mov rsi, hex             ; rsi <- table de hex
+    mov bl, al               ; bl <- al
+    and bl, 0x0F             ; 4 bits haut de bl <- 0
+    add rsi, rbx             ; selectionne le caractere hex
+    push rsi                 ; empile l'adresse du caractere
+    inc rcx                  ; incrémente le compteur 
+    shr rax, 4               ; 4 bits suivants
+    cmp rax, 0               ; si le nombre vaut 0 alors conversion fini
+    jnz b2a16_next
+b2a16_pop:
+    pop rbx                  ; rbx <- adresse du caractere hex
+    mov dl, [rbx]            ; dl <- le carctere hex
+    mov [rdi], dl            ; nombre16[i] <- dl
+    inc rdi                  ; i <- +1
+    loop b2a16_pop 
+  
+b2a16_fin:
+    mov rsi, nombre16
     call afficher
-    pop edx
-    pop ebx
-    pop eax
+    popAll
     ret
